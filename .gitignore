@@ -1,2 +1,4 @@
 .venv/
 api_keys.local.json
+__pycache__/
+*.pyc

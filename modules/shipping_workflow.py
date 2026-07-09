@@ -1,0 +1,84 @@
+"""
+Central shipping evaluation workflow.
+
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_01_BUILD_002"
+PURPOSE = "Orchestrate input normalization, validation, pricing, and recommendation metrics"
+"""
+
+from modules.location_demo import berechne_demo_entfernung_km, normalisiere_plz
+from modules.pricing_simulation import (
+    berechne_ersparnis,
+    ermittle_vertrauensscore,
+    simuliere_anbieterpreise,
+)
+from modules.shipment_model import ShipmentEvaluation, ShipmentInput
+from modules.shipping_rules import pruefe_plausibilitaet
+
+
+def evaluate_shipment(shipment: ShipmentInput) -> ShipmentEvaluation:
+    """
+    Evaluate one shipment from UI input to recommendation-ready result.
+
+    Data contract:
+    - Input: ShipmentInput from UI or later ERP/customer data.
+    - Output: ShipmentEvaluation with provider results, warning state, and decision metrics.
+    - Fehlerfall: Invalid or missing address data is returned as visible warnings, not hidden.
+    - Einheit: Gewicht kg, Maße cm, Entfernung km, Preise EUR.
+    - Zeitbezug: Current demo state; no live API call in this workflow yet.
+    - Quelle: UI input and static demo provider model.
+    """
+    plz_norm = normalisiere_plz(shipment.plz)
+    entfernung_km, entfernung_hinweis = berechne_demo_entfernung_km(plz_norm, shipment.land)
+
+    ergebnisse = simuliere_anbieterpreise(
+        shipment.paket_menge,
+        shipment.gewicht_kg,
+        shipment.laenge_cm,
+        shipment.breite_cm,
+        shipment.hoehe_cm,
+        entfernung_km,
+    )
+    if not ergebnisse:
+        raise ValueError("Keine Anbieterergebnisse erzeugt. Provider-Modell prüfen.")
+
+    bestes_ergebnis = next((ergebnis for ergebnis in ergebnisse if ergebnis["moeglich"]), None)
+    referenz = ergebnisse[0]
+
+    warnungen = pruefe_plausibilitaet(
+        shipment.paket_menge,
+        shipment.gewicht_kg,
+        shipment.laenge_cm,
+        shipment.breite_cm,
+        shipment.hoehe_cm,
+    )
+    if not shipment.plz or not shipment.ort:
+        warnungen.append(
+            "Zieladresse noch unvollständig: Für echte API-Preise sind mindestens Land, PLZ und Ort nötig."
+        )
+
+    zulaessig_gesamt = sum(1 for ergebnis in ergebnisse if ergebnis["moeglich"])
+    ausgeschlossen_gesamt = len(ergebnisse) - zulaessig_gesamt
+    vertrauensscore = ermittle_vertrauensscore(
+        zulaessig_gesamt,
+        ausgeschlossen_gesamt,
+        warnungen,
+        bestes_ergebnis,
+    )
+    ersparnis_betrag, ersparnis_prozent, teuerster_anbieter = berechne_ersparnis(ergebnisse)
+
+    return ShipmentEvaluation(
+        input_data=shipment,
+        plz_norm=plz_norm,
+        entfernung_km=entfernung_km,
+        entfernung_hinweis=entfernung_hinweis,
+        ergebnisse=ergebnisse,
+        bestes_ergebnis=bestes_ergebnis,
+        referenz=referenz,
+        warnungen=warnungen,
+        zulaessig_gesamt=zulaessig_gesamt,
+        ausgeschlossen_gesamt=ausgeschlossen_gesamt,
+        vertrauensscore=vertrauensscore,
+        ersparnis_betrag=ersparnis_betrag,
+        ersparnis_prozent=ersparnis_prozent,
+        teuerster_anbieter=teuerster_anbieter,
+    )
