@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-07-21 - VERSANDKOMPASS_2026_07_21_BUILD_007
+
+- Änderung: Mehrere Absenderprofile mit UI-Auswahl und Workflow-Anbindung eingeführt.
+- Grund: Versandursprung muss bei mehreren Standorten/Absendern fachlich nachvollziehbar sein.
+- Risiko: Aktuelle Standortdaten sind Demo-Profile; echte Firmendaten müssen später validiert werden.
+- Test: Unit-Tests für Absenderprofile und unterschiedliche Distanzbewertung je Absender.
+
 ## 2026-07-21 - VERSANDKOMPASS_2026_07_21_BUILD_006
 
 - Änderung: Mehrpaketsendungen mit unterschiedlichen Maßen und Gewichten über `PackageItem` eingeführt.

@@ -11,6 +11,7 @@ from data.demo_data import ANBIETER_MODELLE
 from modules.location_demo import berechne_demo_entfernung_km, normalisiere_plz
 from modules.pickup_costs import summarize_unbooked_pickups
 from modules.pricing_simulation import simuliere_anbieterpreise, simuliere_anbieterpreise_fuer_pakete
+from modules.sender_profiles import find_sender_profile, list_sender_profiles
 from modules.shipment_model import PackageItem, ShipmentInput
 from modules.shipping_workflow import evaluate_shipment
 from ui.provider_panel import render_provider_grid
@@ -156,6 +157,31 @@ class ShippingCoreTest(unittest.TestCase):
         self.assertEqual(evaluation.input_data.effective_paket_menge, 2)
         self.assertEqual(evaluation.referenz["paket_menge"], 2)
         self.assertTrue(evaluation.ergebnisse)
+
+
+    def test_sender_profiles_are_available(self):
+        senders = list_sender_profiles()
+        self.assertGreaterEqual(len(senders), 2)
+        self.assertTrue(any(sender.id == "lev_hauptstandort" for sender in senders))
+
+    def test_workflow_uses_selected_sender_for_distance(self):
+        leverkusen = find_sender_profile("lev_hauptstandort")
+        duisburg = find_sender_profile("lager_duisburg")
+        base = dict(
+            paket_menge=1,
+            gewicht_kg=1.4,
+            laenge_cm=30,
+            breite_cm=22,
+            hoehe_cm=12,
+            empfaenger="Musterkunde GmbH",
+            land="Deutschland",
+            plz="44135",
+            ort="Dortmund",
+        )
+        ev_lev = evaluate_shipment(ShipmentInput(**base, sender=leverkusen))
+        ev_du = evaluate_shipment(ShipmentInput(**base, sender=duisburg))
+        self.assertNotEqual(ev_lev.entfernung_km, ev_du.entfernung_km)
+        self.assertEqual(ev_du.input_data.sender_profile().id, "lager_duisburg")
 
 
 if __name__ == "__main__":

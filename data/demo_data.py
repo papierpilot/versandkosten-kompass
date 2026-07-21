@@ -1,7 +1,7 @@
 """
 Demo data and static simulation models for Versandkosten-Kompass.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_09_BUILD_005"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_007"
 PURPOSE = "Static demo data used by the simulation layer"
 """
 
@@ -105,7 +105,8 @@ PLZ_ORT_DEMO = {
 
 
 VERSANDSTANDORT = {
-    "name": "Auftraggeber",
+    "id": "lev_hauptstandort",
+    "name": "Hauptstandort Leverkusen",
     "strasse": "Am Handwerkerhof 3",
     "plz": "51379",
     "ort": "Leverkusen",
@@ -115,6 +116,31 @@ VERSANDSTANDORT = {
     "lat": 51.0667,
     "lon": 7.0167,
 }
+
+
+SENDER_PROFILES = [
+    VERSANDSTANDORT,
+    {
+        "id": "lager_duesseldorf",
+        "name": "Lager Düsseldorf",
+        "strasse": "Musterstraße 12",
+        "plz": "40210",
+        "ort": "Düsseldorf",
+        "land": "Deutschland",
+        "lat": 51.2200,
+        "lon": 6.7900,
+    },
+    {
+        "id": "lager_duisburg",
+        "name": "Außenlager Duisburg",
+        "strasse": "Logistikring 8",
+        "plz": "47051",
+        "ort": "Duisburg",
+        "land": "Deutschland",
+        "lat": 51.4330,
+        "lon": 6.7620,
+    },
+]
 
 
 PLZ_KOORDINATEN_DEMO = {

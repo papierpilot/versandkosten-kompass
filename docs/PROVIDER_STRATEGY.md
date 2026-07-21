@@ -17,3 +17,10 @@ Jumingo ist als weiterer Simulationsanbieter im zentralen Anbieter-Modell hinter
 ## Ungebuchte Abholungen
 
 Die Kostenbox für getätigte, aber ungebuchte Abholungen wird über `modules/pickup_costs.py` berechnet. Aktuell nutzt sie Demo-Daten aus `UNBOOKED_PICKUPS_DEMO`. Später wird diese Quelle durch ERP/TMS-/Abholjournal-Daten ersetzt.
+
+
+## Absenderprofile
+
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_007"
+
+Mehrere Absender werden über `modules/sender_profiles.py` bereitgestellt. Provider-APIs sollen später immer den gewählten Absender erhalten, nicht einen hart codierten Standort.

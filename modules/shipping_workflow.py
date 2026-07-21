@@ -1,7 +1,7 @@
 """
 Central shipping evaluation workflow.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_006"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_007"
 PURPOSE = "Orchestrate input normalization, validation, pricing, and recommendation metrics"
 """
 
@@ -27,8 +27,9 @@ def evaluate_shipment(shipment: ShipmentInput) -> ShipmentEvaluation:
     - Zeitbezug: Current demo state; no live API call in this workflow yet.
     - Quelle: UI input and static demo provider model.
     """
+    sender = shipment.sender_profile()
     plz_norm = normalisiere_plz(shipment.plz)
-    entfernung_km, entfernung_hinweis = berechne_demo_entfernung_km(plz_norm, shipment.land)
+    entfernung_km, entfernung_hinweis = berechne_demo_entfernung_km(plz_norm, shipment.land, sender)
 
     packages = shipment.package_items()
     ergebnisse = simuliere_anbieterpreise_fuer_pakete(packages, entfernung_km)

@@ -1,7 +1,7 @@
 """
 Recommendation and booking panels for Versandkosten-Kompass.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_006"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_007"
 PURPOSE = "Render recommendation, decision context, and simulated booking from prepared data"
 """
 
@@ -20,6 +20,7 @@ from services.label_pdf import make_demo_label_pdf
 def build_decision_note(evaluation: ShipmentEvaluation) -> str:
     """Build the visible decision note from a prepared evaluation."""
     shipment = evaluation.input_data
+    sender = shipment.sender_profile()
     bestes_ergebnis = evaluation.bestes_ergebnis
     if not bestes_ergebnis:
         return "Keine zulässige Empfehlung. Maße oder Gewicht müssen geprüft werden."
@@ -30,7 +31,7 @@ def build_decision_note(evaluation: ShipmentEvaluation) -> str:
         f"Empfehlung: {bestes_ergebnis['anbieter']}, weil günstigster zulässiger Anbieter bei "
         f"{shipment.effective_paket_menge} Paket(en) und {evaluation.referenz['abrechnungsgewicht']:.2f} kg Abrechnungsgewicht. "
         f"Ziel: {shipment.plz or 'ohne PLZ'} {shipment.ort or ''}, {shipment.land}. "
-        f"Demo-Entfernung ab {VERSANDSTANDORT['plz']} {VERSANDSTANDORT['ort']}: "
+        f"Demo-Entfernung ab {sender.plz} {sender.ort}: "
         f"{formatiere_entfernung(evaluation.entfernung_km)}. "
         f"Distanzfaktor: {formatiere_faktor(bestes_ergebnis.get('distanzfaktor', 1.0))} "
         f"({bestes_ergebnis.get('distanzhinweis', 'nicht bewertet')})."
@@ -40,6 +41,7 @@ def build_decision_note(evaluation: ShipmentEvaluation) -> str:
 def render_result_panel(evaluation: ShipmentEvaluation) -> bool:
     """Render result column and return whether productive display mode is active."""
     shipment = evaluation.input_data
+    sender = shipment.sender_profile()
     bestes_ergebnis = evaluation.bestes_ergebnis
     referenz = evaluation.referenz
 
@@ -66,7 +68,7 @@ def render_result_panel(evaluation: ShipmentEvaluation) -> bool:
                 <div class="winner-meta">
                     {shipment.effective_paket_menge} Paket(e) · {euro(bestes_ergebnis['preis_pro_paket'])} pro Paket<br>
                     {bestes_ergebnis['formatklasse']} · {referenz['abrechnungsgewicht']:.2f} kg Abrechnung / Paket<br>
-                    Versand ab {VERSANDSTANDORT['plz']} {VERSANDSTANDORT['ort']} · {formatiere_entfernung(evaluation.entfernung_km)}<br>
+                    Versand ab {sender.plz} {sender.ort} · {formatiere_entfernung(evaluation.entfernung_km)}<br>
                     Distanzfaktor {formatiere_faktor(bestes_ergebnis.get('distanzfaktor', 1.0))} · {bestes_ergebnis.get('distanzhinweis', 'nicht bewertet')}<br>
                     {bestes_ergebnis['demo_hinweis']}
                 </div>

@@ -1,12 +1,14 @@
 """
 Shipment data contracts for Versandkosten-Kompass.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_006"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_007"
 PURPOSE = "Typed input and evaluation objects for single- and multi-package shipments"
 """
 
 from dataclasses import dataclass
 from typing import Any
+
+from modules.sender_profiles import SenderProfile, default_sender_profile
 
 
 @dataclass(frozen=True)
@@ -34,6 +36,11 @@ class ShipmentInput:
     plz: str
     ort: str
     packages: tuple[PackageItem, ...] = ()
+    sender: SenderProfile | None = None
+
+    def sender_profile(self) -> SenderProfile:
+        """Return selected sender profile, or the default profile for legacy calls."""
+        return self.sender or default_sender_profile()
 
     def package_items(self) -> tuple[PackageItem, ...]:
         """Return explicit package items, or expand the uniform quick input."""

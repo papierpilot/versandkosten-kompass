@@ -1,7 +1,7 @@
 """
 Demo location and distance helpers.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_01_BUILD_001"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_007"
 PURPOSE = "PLZ normalization, demo city lookup, and demo distance factors"
 """
 
@@ -10,13 +10,14 @@ import math
 from data.demo_data import PLZ_KOORDINATEN_DEMO, PLZ_ORT_DEMO, VERSANDSTANDORT
 
 
-def berechne_demo_entfernung_km(empfaenger_plz, land="Deutschland"):
+def berechne_demo_entfernung_km(empfaenger_plz, land="Deutschland", sender=None):
     """
-    Grobe Demo-Entfernung vom festen Versandstandort zur Empfänger-PLZ.
+    Grobe Demo-Entfernung vom gewählten Versandstandort zur Empfänger-PLZ.
     Das ist bewusst keine echte Straßenroute, sondern eine sichtbare Näherung für die Vorführung.
     In der echten API-Version rechnet der Dienstleister die Zone/Strecke selbst.
     """
-    if land != "Deutschland":
+    sender_land = getattr(sender, "land", VERSANDSTANDORT["land"])
+    if land != "Deutschland" or sender_land != "Deutschland":
         return None, "nur für deutschen Demo-Datensatz"
 
     plz_norm = normalisiere_plz(empfaenger_plz)
@@ -24,8 +25,8 @@ def berechne_demo_entfernung_km(empfaenger_plz, land="Deutschland"):
     if not ziel:
         return None, "PLZ nicht im Demo-Distanzdatensatz"
 
-    lat1 = math.radians(VERSANDSTANDORT["lat"])
-    lon1 = math.radians(VERSANDSTANDORT["lon"])
+    lat1 = math.radians(float(getattr(sender, "lat", VERSANDSTANDORT["lat"])))
+    lon1 = math.radians(float(getattr(sender, "lon", VERSANDSTANDORT["lon"])))
     lat2 = math.radians(ziel[0])
     lon2 = math.radians(ziel[1])
     dlat = lat2 - lat1

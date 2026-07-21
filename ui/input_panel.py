@@ -1,7 +1,7 @@
 """
 Input and validation panels for Versandkosten-Kompass.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_006"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_007"
 PURPOSE = "Collect shipment input and render prepared validation data without pricing logic"
 """
 
@@ -9,7 +9,7 @@ from collections.abc import Callable
 
 import streamlit as st
 
-from data.demo_data import VERSANDSTANDORT
+from modules.sender_profiles import list_sender_profiles
 from modules.location_demo import (
     berechne_demo_entfernung_km,
     finde_ort_zu_plz,
@@ -49,6 +49,18 @@ def render_input_panel(
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="panel">', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Absender</div>', unsafe_allow_html=True)
+    sender_profiles = list_sender_profiles()
+    sender_labels = [sender.display_name for sender in sender_profiles]
+    sender_label = st.selectbox("Absender wählen", sender_labels, key="sender_profile")
+    sender = sender_profiles[sender_labels.index(sender_label)]
+    st.markdown(
+        f'<div class="hint-line">Versand ab: <strong>{sender.address_line}</strong></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="panel">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">Empfänger / Stammdaten</div>', unsafe_allow_html=True)
     if st.button("Stammdaten übernehmen"):
         uebernehme_stammdaten()
@@ -68,7 +80,7 @@ def render_input_panel(
             ort = st.text_input("Ort", key="ort")
 
     plz_norm = normalisiere_plz(plz)
-    entfernung_km, entfernung_hinweis = berechne_demo_entfernung_km(plz_norm, land)
+    entfernung_km, entfernung_hinweis = berechne_demo_entfernung_km(plz_norm, land, sender)
     if land == "Deutschland" and plz_norm and auto_ort:
         st.markdown(
             f'<div class="hint-line">PLZ erkannt: {plz_norm} → {auto_ort}. Später aus Kunden-/ERP-Stammdaten.</div>',
@@ -85,7 +97,7 @@ def render_input_panel(
             unsafe_allow_html=True,
         )
     st.markdown(
-        f'<div class="hint-line">Versand ab: <strong>{VERSANDSTANDORT["plz"]} {VERSANDSTANDORT["ort"]}</strong> · Entfernung: <strong>{formatiere_entfernung(entfernung_km)}</strong> · {entfernung_hinweis}</div>',
+        f'<div class="hint-line">Entfernung ab <strong>{sender.plz} {sender.ort}</strong>: <strong>{formatiere_entfernung(entfernung_km)}</strong> · {entfernung_hinweis}</div>',
         unsafe_allow_html=True,
     )
     st.markdown('</div>', unsafe_allow_html=True)
@@ -150,6 +162,7 @@ def render_input_panel(
         plz=plz,
         ort=ort,
         packages=packages,
+        sender=sender,
     )
 
 

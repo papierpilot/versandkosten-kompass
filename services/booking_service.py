@@ -1,7 +1,7 @@
 """
 Booking object creation for the simulation flow.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_006"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_007"
 PURPOSE = "Create a visible simulated booking result from a selected provider result"
 """
 
