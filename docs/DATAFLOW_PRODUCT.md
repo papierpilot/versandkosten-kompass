@@ -1,6 +1,6 @@
 # Versandkosten-Kompass Datenfluss
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_01_BUILD_002"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_006"
 
 ## Ziel
 
@@ -42,3 +42,22 @@ Output: `ShipmentEvaluation`
 ## Aktuelle Grenze
 
 Dieser Build nutzt weiterhin Simulation. Echte Provider-APIs werden später in `services/provider_clients/` angeschlossen und müssen denselben Datenvertrag bedienen.
+
+
+## Build VERSANDKOMPASS_2026_07_21_BUILD_006: Mehrpaketsendungen
+
+`ShipmentInput` kann jetzt eine Liste von `PackageItem` enthalten. Damit sind Mehrpaketsendungen mit unterschiedlichen Maßen und Gewichten fachlich sichtbar.
+
+Schnellmodus:
+
+- Menge
+- einheitliches Gewicht
+- einheitliche Maße
+
+Einzelpaketmodus:
+
+- Paketposition
+- Gewicht pro Paket
+- Länge, Breite, Höhe pro Paket
+
+Der Workflow bewertet immer die effektive Paketliste. Anbieter-Ausschlüsse werden paketgenau erzeugt, Preise werden über alle Paketpositionen summiert.

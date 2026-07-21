@@ -10,8 +10,8 @@ import unittest
 from data.demo_data import ANBIETER_MODELLE
 from modules.location_demo import berechne_demo_entfernung_km, normalisiere_plz
 from modules.pickup_costs import summarize_unbooked_pickups
-from modules.pricing_simulation import simuliere_anbieterpreise
-from modules.shipment_model import ShipmentInput
+from modules.pricing_simulation import simuliere_anbieterpreise, simuliere_anbieterpreise_fuer_pakete
+from modules.shipment_model import PackageItem, ShipmentInput
 from modules.shipping_workflow import evaluate_shipment
 from ui.provider_panel import render_provider_grid
 from ui.result_panel import build_decision_note
@@ -123,6 +123,39 @@ class ShippingCoreTest(unittest.TestCase):
         )
         self.assertEqual(summary.count, 2)
         self.assertEqual(summary.total_cost, 14.75)
+
+
+    def test_multipackage_pricing_uses_different_package_items(self):
+        packages = (
+            PackageItem(position=1, gewicht_kg=1.4, laenge_cm=30, breite_cm=22, hoehe_cm=12),
+            PackageItem(position=2, gewicht_kg=18.0, laenge_cm=145, breite_cm=38, hoehe_cm=28),
+        )
+        results = simuliere_anbieterpreise_fuer_pakete(packages, 80)
+        self.assertEqual(results[0]["paket_menge"], 2)
+        self.assertEqual(len(results[0]["paket_details"]), 2)
+        self.assertGreater(results[0]["gesamt_abrechnungsgewicht"], results[0]["abrechnungsgewicht"])
+
+    def test_workflow_accepts_explicit_package_items(self):
+        evaluation = evaluate_shipment(
+            ShipmentInput(
+                paket_menge=2,
+                gewicht_kg=1.4,
+                laenge_cm=30,
+                breite_cm=22,
+                hoehe_cm=12,
+                empfaenger="Musterkunde GmbH",
+                land="Deutschland",
+                plz="44135",
+                ort="Dortmund",
+                packages=(
+                    PackageItem(position=1, gewicht_kg=1.4, laenge_cm=30, breite_cm=22, hoehe_cm=12),
+                    PackageItem(position=2, gewicht_kg=18.0, laenge_cm=145, breite_cm=38, hoehe_cm=28),
+                ),
+            )
+        )
+        self.assertEqual(evaluation.input_data.effective_paket_menge, 2)
+        self.assertEqual(evaluation.referenz["paket_menge"], 2)
+        self.assertTrue(evaluation.ergebnisse)
 
 
 if __name__ == "__main__":

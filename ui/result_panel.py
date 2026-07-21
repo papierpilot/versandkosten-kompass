@@ -1,7 +1,7 @@
 """
 Recommendation and booking panels for Versandkosten-Kompass.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_01_BUILD_004"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_006"
 PURPOSE = "Render recommendation, decision context, and simulated booking from prepared data"
 """
 
@@ -28,7 +28,7 @@ def build_decision_note(evaluation: ShipmentEvaluation) -> str:
         f"Alle Anbieter geprüft · {evaluation.zulaessig_gesamt} zulässig · "
         f"{evaluation.ausgeschlossen_gesamt} ausgeschlossen. "
         f"Empfehlung: {bestes_ergebnis['anbieter']}, weil günstigster zulässiger Anbieter bei "
-        f"{shipment.paket_menge} Paket(en) und {evaluation.referenz['abrechnungsgewicht']:.2f} kg Abrechnungsgewicht. "
+        f"{shipment.effective_paket_menge} Paket(en) und {evaluation.referenz['abrechnungsgewicht']:.2f} kg Abrechnungsgewicht. "
         f"Ziel: {shipment.plz or 'ohne PLZ'} {shipment.ort or ''}, {shipment.land}. "
         f"Demo-Entfernung ab {VERSANDSTANDORT['plz']} {VERSANDSTANDORT['ort']}: "
         f"{formatiere_entfernung(evaluation.entfernung_km)}. "
@@ -64,14 +64,14 @@ def render_result_panel(evaluation: ShipmentEvaluation) -> bool:
                 <div class="winner-name">{bestes_ergebnis['anbieter']}</div>
                 <div class="winner-price">{euro(bestes_ergebnis['preis'])}</div>
                 <div class="winner-meta">
-                    {shipment.paket_menge} Paket(e) · {euro(bestes_ergebnis['preis_pro_paket'])} pro Paket<br>
+                    {shipment.effective_paket_menge} Paket(e) · {euro(bestes_ergebnis['preis_pro_paket'])} pro Paket<br>
                     {bestes_ergebnis['formatklasse']} · {referenz['abrechnungsgewicht']:.2f} kg Abrechnung / Paket<br>
                     Versand ab {VERSANDSTANDORT['plz']} {VERSANDSTANDORT['ort']} · {formatiere_entfernung(evaluation.entfernung_km)}<br>
                     Distanzfaktor {formatiere_faktor(bestes_ergebnis.get('distanzfaktor', 1.0))} · {bestes_ergebnis.get('distanzhinweis', 'nicht bewertet')}<br>
                     {bestes_ergebnis['demo_hinweis']}
                 </div>
                 <div class="trust-list">
-                    {entscheidungsbasis_html(bestes_ergebnis, shipment.paket_menge, evaluation.entfernung_km)}
+                    {entscheidungsbasis_html(bestes_ergebnis, shipment.effective_paket_menge, evaluation.entfernung_km)}
                 </div>
                 <div class="human-note">Diese Empfehlung entspricht der Entscheidung, die ein erfahrener Versandmitarbeiter nach manueller Prüfung voraussichtlich ebenfalls treffen würde.</div>
             </div>
@@ -95,11 +95,11 @@ def render_result_panel(evaluation: ShipmentEvaluation) -> bool:
             st.session_state["booking_steps"] = erledigt
             st.session_state["booking"] = build_booking(
                 bestes_ergebnis,
-                shipment.paket_menge,
-                shipment.gewicht_kg,
-                shipment.laenge_cm,
-                shipment.breite_cm,
-                shipment.hoehe_cm,
+                shipment.effective_paket_menge,
+                shipment.total_gewicht_kg,
+                evaluation.referenz["paket_details"][0]["laenge_cm"],
+                evaluation.referenz["paket_details"][0]["breite_cm"],
+                evaluation.referenz["paket_details"][0]["hoehe_cm"],
                 shipment.empfaenger,
                 shipment.land,
                 shipment.plz,

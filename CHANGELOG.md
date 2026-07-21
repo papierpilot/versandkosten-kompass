@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-07-21 - VERSANDKOMPASS_2026_07_21_BUILD_006
+
+- Änderung: Mehrpaketsendungen mit unterschiedlichen Maßen und Gewichten über `PackageItem` eingeführt.
+- Grund: Reale Mehrpaketsendungen bestehen nicht zwingend aus identischen Paketen.
+- Risiko: Simulationspreise sind weiterhin Näherungen; echte Provider-APIs müssen später die Paketliste direkt übernehmen.
+- Test: Unit-Tests für explizite Paketlisten, Workflow-Auswertung, Syntax, App-Import und HTTP-Check.
+
 ## 2026-07-09 - VERSANDKOMPASS_2026_07_09_BUILD_005
 
 - Änderung: Anbieter Jumingo ergänzt und Kostenbox für getätigte ungebuchte Abholungen eingeführt.

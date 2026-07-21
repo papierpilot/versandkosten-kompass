@@ -1,7 +1,7 @@
 """
 Input and validation panels for Versandkosten-Kompass.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_01_BUILD_004"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_006"
 PURPOSE = "Collect shipment input and render prepared validation data without pricing logic"
 """
 
@@ -17,7 +17,7 @@ from modules.location_demo import (
     formatiere_faktor,
     normalisiere_plz,
 )
-from modules.shipment_model import ShipmentEvaluation, ShipmentInput
+from modules.shipment_model import PackageItem, ShipmentEvaluation, ShipmentInput
 
 
 COUNTRIES = ["Deutschland", "Österreich", "Niederlande", "Belgien", "Frankreich", "Schweiz"]
@@ -92,22 +92,55 @@ def render_input_panel(
 
     st.markdown('<div class="panel">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">Sendungsdaten</div>', unsafe_allow_html=True)
-    a, b = st.columns(2, gap="small")
-    with a:
-        paket_menge = st.number_input("Menge", min_value=1, step=1, key="menge")
-    with b:
-        gewicht_kg = st.number_input("Gewicht kg", min_value=0.1, step=0.1, format="%.2f", key="gewicht")
-    c, d, e = st.columns(3, gap="small")
-    with c:
-        laenge_cm = st.number_input("Länge", min_value=1.0, step=1.0, key="laenge")
-    with d:
-        breite_cm = st.number_input("Breite", min_value=1.0, step=1.0, key="breite")
-    with e:
-        hoehe_cm = st.number_input("Höhe", min_value=1.0, step=1.0, key="hoehe")
+    unterschiedliche_pakete = st.checkbox("Pakete einzeln erfassen", key="pakete_unterschiedlich")
+    packages = ()
+
+    if unterschiedliche_pakete:
+        paket_menge = st.number_input("Anzahl Paketzeilen", min_value=1, max_value=8, step=1, key="paket_anzahl_unterschiedlich")
+        package_rows = []
+        for index in range(1, int(paket_menge) + 1):
+            st.markdown(f'<div class="hint-line">Paket {index}</div>', unsafe_allow_html=True)
+            p1, p2, p3, p4 = st.columns(4, gap="small")
+            with p1:
+                gewicht = st.number_input("Gewicht kg", min_value=0.1, step=0.1, format="%.2f", key=f"paket_{index}_gewicht")
+            with p2:
+                laenge = st.number_input("Länge", min_value=1.0, step=1.0, key=f"paket_{index}_laenge")
+            with p3:
+                breite = st.number_input("Breite", min_value=1.0, step=1.0, key=f"paket_{index}_breite")
+            with p4:
+                hoehe = st.number_input("Höhe", min_value=1.0, step=1.0, key=f"paket_{index}_hoehe")
+            package_rows.append(
+                PackageItem(
+                    position=index,
+                    gewicht_kg=gewicht,
+                    laenge_cm=laenge,
+                    breite_cm=breite,
+                    hoehe_cm=hoehe,
+                )
+            )
+        packages = tuple(package_rows)
+        gewicht_kg = packages[0].gewicht_kg
+        laenge_cm = packages[0].laenge_cm
+        breite_cm = packages[0].breite_cm
+        hoehe_cm = packages[0].hoehe_cm
+    else:
+        a, b = st.columns(2, gap="small")
+        with a:
+            paket_menge = st.number_input("Menge", min_value=1, step=1, key="menge")
+        with b:
+            gewicht_kg = st.number_input("Gewicht kg", min_value=0.1, step=0.1, format="%.2f", key="gewicht")
+        c, d, e = st.columns(3, gap="small")
+        with c:
+            laenge_cm = st.number_input("Länge", min_value=1.0, step=1.0, key="laenge")
+        with d:
+            breite_cm = st.number_input("Breite", min_value=1.0, step=1.0, key="breite")
+        with e:
+            hoehe_cm = st.number_input("Höhe", min_value=1.0, step=1.0, key="hoehe")
+
     st.markdown('</div>', unsafe_allow_html=True)
 
     return ShipmentInput(
-        paket_menge=paket_menge,
+        paket_menge=int(paket_menge),
         gewicht_kg=gewicht_kg,
         laenge_cm=laenge_cm,
         breite_cm=breite_cm,
@@ -116,6 +149,7 @@ def render_input_panel(
         land=land,
         plz=plz,
         ort=ort,
+        packages=packages,
     )
 
 
@@ -123,15 +157,20 @@ def render_validation_panel(evaluation: ShipmentEvaluation) -> None:
     """Render prepared validation values from the workflow evaluation."""
     shipment = evaluation.input_data
     referenz = evaluation.referenz
+    package_count = shipment.effective_paket_menge
+    total_weight = shipment.total_gewicht_kg
+    total_billing_weight = referenz.get("gesamt_abrechnungsgewicht", referenz["abrechnungsgewicht"] * package_count)
     st.markdown('<div class="panel">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">Prüfung</div>', unsafe_allow_html=True)
     st.markdown(
         f"""
         <div class="mini-grid">
             <div class="mini-box"><div class="mini-label">Volumen kg</div><div class="mini-value">{referenz['volumengewicht']:.2f}</div></div>
-            <div class="mini-box"><div class="mini-label">Abrechnung kg</div><div class="mini-value">{referenz['abrechnungsgewicht']:.2f}</div></div>
-            <div class="mini-box"><div class="mini-label">Gesamt kg</div><div class="mini-value">{referenz['abrechnungsgewicht'] * shipment.paket_menge:.2f}</div></div>
+            <div class="mini-box"><div class="mini-label">Max. Abrechnung kg</div><div class="mini-value">{referenz['abrechnungsgewicht']:.2f}</div></div>
+            <div class="mini-box"><div class="mini-label">Gesamt Abrechnung</div><div class="mini-value">{total_billing_weight:.2f} kg</div></div>
             <div class="mini-box"><div class="mini-label">Gurtmaß</div><div class="mini-value">{referenz['gurtmass']:.0f} cm</div></div>
+            <div class="mini-box"><div class="mini-label">Pakete</div><div class="mini-value">{package_count}</div></div>
+            <div class="mini-box"><div class="mini-label">Realgewicht</div><div class="mini-value">{total_weight:.2f} kg</div></div>
             <div class="mini-box"><div class="mini-label">Distanz</div><div class="mini-value">{formatiere_entfernung(evaluation.entfernung_km)}</div></div>
             <div class="mini-box"><div class="mini-label">Distanzfaktor</div><div class="mini-value">{formatiere_faktor(referenz.get('distanzfaktor', 1.0))}</div></div>
         </div>

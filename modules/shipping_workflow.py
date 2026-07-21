@@ -1,7 +1,7 @@
 """
 Central shipping evaluation workflow.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_01_BUILD_002"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_006"
 PURPOSE = "Orchestrate input normalization, validation, pricing, and recommendation metrics"
 """
 
@@ -9,7 +9,7 @@ from modules.location_demo import berechne_demo_entfernung_km, normalisiere_plz
 from modules.pricing_simulation import (
     berechne_ersparnis,
     ermittle_vertrauensscore,
-    simuliere_anbieterpreise,
+    simuliere_anbieterpreise_fuer_pakete,
 )
 from modules.shipment_model import ShipmentEvaluation, ShipmentInput
 from modules.shipping_rules import pruefe_plausibilitaet
@@ -30,27 +30,26 @@ def evaluate_shipment(shipment: ShipmentInput) -> ShipmentEvaluation:
     plz_norm = normalisiere_plz(shipment.plz)
     entfernung_km, entfernung_hinweis = berechne_demo_entfernung_km(plz_norm, shipment.land)
 
-    ergebnisse = simuliere_anbieterpreise(
-        shipment.paket_menge,
-        shipment.gewicht_kg,
-        shipment.laenge_cm,
-        shipment.breite_cm,
-        shipment.hoehe_cm,
-        entfernung_km,
-    )
+    packages = shipment.package_items()
+    ergebnisse = simuliere_anbieterpreise_fuer_pakete(packages, entfernung_km)
     if not ergebnisse:
         raise ValueError("Keine Anbieterergebnisse erzeugt. Provider-Modell prüfen.")
 
     bestes_ergebnis = next((ergebnis for ergebnis in ergebnisse if ergebnis["moeglich"]), None)
     referenz = ergebnisse[0]
 
-    warnungen = pruefe_plausibilitaet(
-        shipment.paket_menge,
-        shipment.gewicht_kg,
-        shipment.laenge_cm,
-        shipment.breite_cm,
-        shipment.hoehe_cm,
-    )
+    warnungen = []
+    for package in packages:
+        package_warnungen = pruefe_plausibilitaet(
+            1,
+            package.gewicht_kg,
+            package.laenge_cm,
+            package.breite_cm,
+            package.hoehe_cm,
+        )
+        warnungen.extend(f"Paket {package.position}: {warnung}" for warnung in package_warnungen)
+    if len(packages) >= 20:
+        warnungen.append("Hohe Paketmenge: Sammelversand kann wirtschaftlicher sein.")
     if not shipment.plz or not shipment.ort:
         warnungen.append(
             "Zieladresse noch unvollständig: Für echte API-Preise sind mindestens Land, PLZ und Ort nötig."

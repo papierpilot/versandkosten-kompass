@@ -1,4 +1,4 @@
-# BUILD_MARKER = "VERSANDKOMPASS_2026_07_09_BUILD_005"
+# BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_006"
 # PURPOSE = "Streamlit orchestration for Versandkosten-Kompass"
 
 import streamlit as st

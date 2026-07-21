@@ -1,7 +1,7 @@
 """
 Booking object creation for the simulation flow.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_01_BUILD_001"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_006"
 PURPOSE = "Create a visible simulated booking result from a selected provider result"
 """
 
@@ -23,6 +23,7 @@ def build_booking(bestes_ergebnis, paket_menge, gewicht_kg, laenge_cm, breite_cm
         "menge": paket_menge,
         "gewicht": gewicht_kg,
         "masse": f"{laenge_cm:.0f} × {breite_cm:.0f} × {hoehe_cm:.0f} cm",
+        "gesamtgewicht": gewicht_kg,
         "formatklasse": bestes_ergebnis["formatklasse"],
         "sendungsnummer": sendungsnummer,
         "empfaenger": empfaenger or "nicht angegeben",
