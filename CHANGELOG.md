@@ -55,3 +55,10 @@
 - Empfehlung berücksichtigt bei angegebenem Termin fristgerechte Anbieter vor reiner Preislogik.
 - UI zeigt Zustellfrist, passende Services und Demo-Grenzen sichtbar an.
 - Tests für Deadline-Modul und Workflow-Empfehlung ergänzt.
+
+## v0.9.0-tes - BUILD_009
+
+- General Overnight als Kurier-/Overnightanbieter ergänzt.
+- Same-Day-Zustellfristen können im Demo-Serviceprofil über General Overnight erfüllt werden.
+- Preisaufbau kennzeichnet General Overnight als Demo-Tarif mit offener Preisliste.
+- Tests und Dokumentation für General Overnight ergänzt.

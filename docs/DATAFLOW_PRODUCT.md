@@ -78,3 +78,9 @@ Der Workflow ruft nach der Preisermittlung `modules.delivery_deadline.evaluate_d
 Wenn eine Zustellfrist angegeben ist, werden fristgerechte Anbieter vor Preis sortiert. Die Empfehlung bleibt sichtbar begründet: Preis, Anbietergrenzen und Service-Level werden gemeinsam ausgewiesen.
 
 Grenze dieses Builds: Die Zustellfrist ist eine Demo-Serviceprofil-Prüfung. Echte Laufzeitversprechen entstehen erst durch angebundene Provider-SLAs oder Kurierpreislisten.
+
+## Build VERSANDKOMPASS_2026_07_22_BUILD_009: General Overnight
+
+General Overnight ist als weiterer Anbieter im zentralen Provider-Modell enthalten. Die Preisberechnung nutzt aktuell Demo-Werte und kennzeichnet den offenen Preislistenstand sichtbar im Preisaufbau.
+
+Die Zustellfrist-Prüfung kann Same-Day/Kurierbedarf jetzt auf General Overnight abbilden. Damit ist der Datenfluss vorbereitet: Eingabe -> Anbieterpreis -> Service-Level-Prüfung -> begründete Empfehlung.

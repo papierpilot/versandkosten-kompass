@@ -1,7 +1,7 @@
 """
 Shipping rule calculations.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_09_BUILD_005"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_22_BUILD_009"
 PURPOSE = "Pure package calculations, plausibility checks, and provider exclusion rules"
 """
 
@@ -81,6 +81,7 @@ def berechne_simulations_dynamik(anbieter_name, paket_menge):
         "Jumingo": [(2, 0.98, "Plattformpreis bei Einzelpaketen stabil"), (4, 0.90, "Vorteil bei kleinen Online-Buchungen"), (9, 0.93, "solide Plattformkondition bei Mischmengen"), (19, 0.97, "Mengen bleiben gut planbar"), (999999, 1.04, "Großmengen eher Speditionsprüfung")],
         "UPS": [(2, 1.08, "Einzelpaket nicht günstigstes Profil"), (4, 1.03, "noch kein deutlicher Vorteil"), (9, 0.78, "Vorteil bei mittleren Mengen"), (19, 0.92, "Mengenfenster bleibt interessant"), (999999, 1.00, "Großmengen neutral")],
         "Cargoboard": [(2, 1.30, "Spedition bei kleinen Mengen unattraktiv"), (4, 1.18, "noch zu geringe Bündelung"), (9, 1.02, "Schwelle zur Bündelung"), (19, 0.55, "Vorteil bei Sammelversand"), (999999, 0.34, "starker Vorteil bei Großmengen")],
+        "General Overnight": [(2, 1.18, "Kurierdienst mit Preisliste offen"), (4, 1.10, "Overnight-Bündelung simuliert"), (9, 1.04, "Kuriersammelung simuliert"), (19, 1.00, "Kurierprofil bleibt stabil"), (999999, 1.08, "Großmengen brauchen separate Kurierfreigabe")],
     }
     for grenze, faktor, hinweis in matrix.get(anbieter_name, [(999999, 1.00, "neutral")]):
         if paket_menge <= grenze:

@@ -251,3 +251,34 @@ class DeliveryDeadlineTest(unittest.TestCase):
         self.assertIn(evaluation.bestes_ergebnis["anbieter"], {"UPS", "Zipmend", "Jumingo"})
         self.assertTrue(evaluation.bestes_ergebnis["deadline_ok"])
         self.assertEqual(evaluation.deadline_result["status"], "erfuellbar")
+
+class GeneralOvernightTest(unittest.TestCase):
+    def test_general_overnight_is_available(self):
+        provider_names = {provider["name"] for provider in ANBIETER_MODELLE}
+        self.assertIn("General Overnight", provider_names)
+        results = simuliere_anbieterpreise(1, 1.4, 30, 22, 12, 80)
+        general = next(result for result in results if result["anbieter"] == "General Overnight")
+        self.assertTrue(general["moeglich"])
+        self.assertTrue(any("Preisliste offen" in line for line in general["preisaufbau"]))
+
+    def test_general_overnight_covers_same_day_deadline(self):
+        shipment = ShipmentInput(
+            paket_menge=1,
+            gewicht_kg=1.4,
+            laenge_cm=30,
+            breite_cm=22,
+            hoehe_cm=12,
+            empfaenger="Musterkunde GmbH",
+            land="Deutschland",
+            plz="44135",
+            ort="Dortmund",
+            gewuenschtes_zustelldatum="2026-07-22",
+            gewuenschte_zustellzeit="18:00",
+        )
+        results = simuliere_anbieterpreise(1, 1.4, 30, 22, 12, 80)
+        deadline = evaluate_delivery_deadline(shipment, results, today=date(2026, 7, 22))
+        provider_map = {item["anbieter"]: item for item in deadline["ergebnisse"]}
+        self.assertEqual(deadline["status"], "erfuellbar")
+        self.assertTrue(provider_map["General Overnight"]["deadline_ok"])
+        self.assertEqual(provider_map["General Overnight"]["deadline_status"], "kurier_ok")
+        self.assertFalse(provider_map["UPS"]["deadline_ok"])

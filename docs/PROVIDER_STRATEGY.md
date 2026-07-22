@@ -1,6 +1,6 @@
 # Anbieterstrategie
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_09_BUILD_005"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_22_BUILD_009"
 
 ## Neuer Anbieter: Jumingo
 
@@ -40,3 +40,18 @@ Aktuelle Demo-Annahmen:
 - Cargoboard: Standardlaufzeit für größere Transporte
 
 General Overnight ist fachlich als künftiges Kurierprofil vorgesehen. Sobald die Preisliste vorliegt, soll der Anbieter als eigener Provider oder als Kurier-Serviceprofil ergänzt werden.
+
+## General Overnight
+
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_22_BUILD_009"
+
+General Overnight ist jetzt als Kurier-/Overnightanbieter im zentralen Anbieterbestand vorbereitet.
+
+Aktueller Stand:
+
+- Anbieter erscheint im normalen Providervergleich.
+- Same-Day-Fristen können fachlich über General Overnight erfüllt werden.
+- Preise sind ausdrücklich Demo-Werte.
+- Der Preisaufbau markiert `Preisliste offen`, bis die echte General-Overnight-Preisliste gepflegt ist.
+
+Sobald die Preisliste vorliegt, wird nicht die UI umgebaut, sondern nur das Tarifierungsprofil hinter General Overnight ersetzt.

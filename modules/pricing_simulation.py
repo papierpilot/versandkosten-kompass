@@ -1,7 +1,7 @@
 """
 Simulation pricing and recommendation helpers.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_006"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_22_BUILD_009"
 PURPOSE = "Calculate simulated provider prices and recommendation metrics"
 """
 
@@ -125,6 +125,10 @@ def _package_surcharges(modell_name: str, formatklasse: str, abrechnungsgewicht:
         zuschlaege.append(("Plattformbündelung", -1.20))
     if modell_name == "UPS" and abrechnungsgewicht > 31.5:
         zuschlaege.append(("Schwerpaket", 9.50))
+    if modell_name == "General Overnight":
+        zuschlaege.append(("Kurierbereitstellung", 14.00))
+        if paket_menge >= 3:
+            zuschlaege.append(("Kurierbündelung Demo", -3.50))
     return zuschlaege
 
 
@@ -187,6 +191,8 @@ def simuliere_anbieterpreise_fuer_pakete(packages, entfernung_km=None):
             f"Distanz {formatiere_faktor(distanzfaktor)}: {distanzhinweis}",
             f"Demo {simulations_faktor:.2f}: {simulations_hinweis}",
         ]
+        if modell.get("preisliste_status") == "offen":
+            preisaufbau.append("Preisliste offen: Demo-Tarif bis General-Overnight-Liste gepflegt ist")
         for name in sorted(set(zuschlag_namen)):
             preisaufbau.append(f"Zuschlag: {name}")
 

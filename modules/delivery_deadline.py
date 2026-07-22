@@ -1,7 +1,7 @@
 """
 Delivery deadline evaluation for Versandkosten-Kompass.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_22_BUILD_008"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_22_BUILD_009"
 PURPOSE = "Pure service-level simulation for customer delivery deadlines"
 """
 
@@ -29,6 +29,7 @@ PROVIDER_DEADLINE_PROFILES: dict[str, ProviderDeadlineProfile] = {
     "Zipmend": ProviderDeadlineProfile(standard_days=2, express_days=1, express_label="Zipmend Express/Kurier"),
     "Jumingo": ProviderDeadlineProfile(standard_days=2, express_days=1, express_label="Jumingo Express-Option"),
     "Cargoboard": ProviderDeadlineProfile(standard_days=3, express_days=None, express_label="Standard"),
+    "General Overnight": ProviderDeadlineProfile(standard_days=1, express_days=0, express_label="General Overnight Kurier"),
 }
 
 
@@ -73,6 +74,14 @@ def _evaluate_provider(ergebnis: dict[str, Any], days_available: int) -> dict[st
             deadline_reason="Der gewünschte Zustelltermin liegt in der Vergangenheit.",
             deadline_rank=98,
         )
+    elif profile.express_days is not None and days_available >= profile.express_days:
+        annotated.update(
+            deadline_ok=True,
+            deadline_status="express_ok" if days_available > 0 else "kurier_ok",
+            deadline_service=profile.express_label,
+            deadline_reason=f"Express-/Kurieroption im Demo-Profil: {profile.express_days} Werktag(e).",
+            deadline_rank=4 if days_available == 0 else 5,
+        )
     elif days_available == 0:
         annotated.update(
             deadline_ok=False,
@@ -88,14 +97,6 @@ def _evaluate_provider(ergebnis: dict[str, Any], days_available: int) -> dict[st
             deadline_service="Standard",
             deadline_reason=f"Standardlaufzeit im Demo-Profil: {profile.standard_days} Werktag(e).",
             deadline_rank=10,
-        )
-    elif profile.express_days is not None and days_available >= profile.express_days:
-        annotated.update(
-            deadline_ok=True,
-            deadline_status="express_ok",
-            deadline_service=profile.express_label,
-            deadline_reason=f"Express-/Kurieroption im Demo-Profil: {profile.express_days} Werktag(e).",
-            deadline_rank=5,
         )
     else:
         annotated.update(
@@ -155,10 +156,14 @@ def evaluate_delivery_deadline(
         status = "kritisch"
         requirement = "Termin liegt in der Vergangenheit"
         hint = "Die Sendung kann diesen Termin nicht mehr erreichen."
+    elif days_available == 0 and feasible:
+        status = "erfuellbar"
+        requirement = "Same-Day/Kurier erforderlich"
+        hint = "General Overnight ist als Kurierprofil vorbereitet; Preise bleiben bis zur Preisliste Demo-Werte."
     elif days_available == 0:
         status = "kritisch"
         requirement = "Same-Day/Kurier erforderlich"
-        hint = "General Overnight oder ein lokaler Kurier kann nach Preisliste als eigenes Profil ergänzt werden."
+        hint = "Ein tarifierter Kurierdienst wird benötigt."
     elif feasible:
         status = "erfuellbar"
         requirement = "Express erforderlich" if days_available == 1 else "Standard voraussichtlich ausreichend"

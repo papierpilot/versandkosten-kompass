@@ -1,7 +1,7 @@
 """
 Demo data and static simulation models for Versandkosten-Kompass.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_007"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_22_BUILD_009"
 PURPOSE = "Static demo data used by the simulation layer"
 """
 
@@ -65,6 +65,19 @@ ANBIETER_MODELLE = [
         "max_gurtmass": 400,
         "sperrgut_erlaubt": True,
         "stueckgut_erlaubt": False,
+    },
+    {
+        "name": "General Overnight",
+        "basis": 42.00,
+        "kg": 0.95,
+        "handling": 9.50,
+        "profil": "Kurier-/Overnightdienst; Demo-Tarif bis zur echten Preisliste",
+        "max_kg": 70.0,
+        "max_kante": 160,
+        "max_gurtmass": 400,
+        "sperrgut_erlaubt": True,
+        "stueckgut_erlaubt": False,
+        "preisliste_status": "offen",
     },
 ]
 
@@ -217,6 +230,14 @@ UNBOOKED_PICKUPS_DEMO = [
         "referenz": "ABH-20260709-001",
         "beschreibung": "Plattform-Abholung noch nicht final gebucht",
         "kosten": 9.80,
+        "status": "ungebucht",
+    },
+    {
+        "datum": "2026-07-10",
+        "anbieter": "General Overnight",
+        "referenz": "ABH-20260710-001",
+        "beschreibung": "Kurierabholung mit noch offener Preislisten-Zuordnung",
+        "kosten": 24.90,
         "status": "ungebucht",
     },
 ]
