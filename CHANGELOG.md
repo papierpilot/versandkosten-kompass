@@ -48,3 +48,10 @@
 - Grund: `versand_app.py` soll orchestrieren, Fachlogik wandert in klare Module und Services.
 - Risiko: Importfehler durch verschobene Funktionen; UI soll fachlich unverändert bleiben.
 - Test: AST-Syntaxprüfung und Import-/Kernlogikprüfung ohne Streamlit-Start.
+
+## v0.8.0-tes - BUILD_008
+
+- Zustelltermin-Prüfung für Standard, Express und Kurierbedarf ergänzt.
+- Empfehlung berücksichtigt bei angegebenem Termin fristgerechte Anbieter vor reiner Preislogik.
+- UI zeigt Zustellfrist, passende Services und Demo-Grenzen sichtbar an.
+- Tests für Deadline-Modul und Workflow-Empfehlung ergänzt.

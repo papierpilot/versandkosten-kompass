@@ -1,7 +1,7 @@
 """
 Provider comparison rendering.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_01_BUILD_003"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_22_BUILD_008"
 PURPOSE = "Render provider comparison HTML from prepared evaluation results"
 """
 
@@ -25,6 +25,8 @@ def render_provider_grid(ergebnisse, bestes_ergebnis, produktivmodus=False):
             preis = "—"
         empfehlung = " · Empfehlung" if bestes_ergebnis and ergebnis["anbieter"] == bestes_ergebnis["anbieter"] else ""
         begruendung = begruendung_fuer_anbieter(ergebnis, bestes_ergebnis)
+        if ergebnis.get("deadline_status") and ergebnis.get("deadline_status") != "nicht_bewertet":
+            begruendung = f"{begruendung} · Zustellfrist: {ergebnis.get('deadline_service', '-')}"
         cells.extend([
             f"<div class='provider-cell'><span class='rank'>{index}</span></div>",
             f"<div class='provider-cell'><strong>{ergebnis['anbieter']}</strong>{empfehlung}<div class='provider-sub'>{ergebnis['formatklasse']}</div></div>",

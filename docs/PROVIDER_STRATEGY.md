@@ -24,3 +24,19 @@ Die Kostenbox für getätigte, aber ungebuchte Abholungen wird über `modules/pi
 BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_007"
 
 Mehrere Absender werden über `modules/sender_profiles.py` bereitgestellt. Provider-APIs sollen später immer den gewählten Absender erhalten, nicht einen hart codierten Standort.
+
+## Zustellfrist und Expressauswahl
+
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_22_BUILD_008"
+
+Die Anbieterstrategie enthält jetzt eine getrennte Service-Level-Schicht in `modules/delivery_deadline.py`.
+
+Aktuelle Demo-Annahmen:
+
+- DHL: Standard, keine gepflegte Expressoption
+- UPS: Standard plus UPS Express
+- Zipmend: Standard plus Express/Kurieroption
+- Jumingo: Standard plus Express-Option
+- Cargoboard: Standardlaufzeit für größere Transporte
+
+General Overnight ist fachlich als künftiges Kurierprofil vorgesehen. Sobald die Preisliste vorliegt, soll der Anbieter als eigener Provider oder als Kurier-Serviceprofil ergänzt werden.

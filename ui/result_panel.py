@@ -1,7 +1,7 @@
 """
 Recommendation and booking panels for Versandkosten-Kompass.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_007"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_22_BUILD_008"
 PURPOSE = "Render recommendation, decision context, and simulated booking from prepared data"
 """
 
@@ -25,6 +25,13 @@ def build_decision_note(evaluation: ShipmentEvaluation) -> str:
     if not bestes_ergebnis:
         return "Keine zulässige Empfehlung. Maße oder Gewicht müssen geprüft werden."
 
+    deadline_sentence = ""
+    if evaluation.deadline_result and evaluation.deadline_result.get("status") != "nicht_bewertet":
+        deadline_sentence = (
+            f" Zustellfrist: {evaluation.deadline_result['anforderung']} "
+            f"({evaluation.deadline_result['ziel']})."
+        )
+
     return (
         f"Alle Anbieter geprüft · {evaluation.zulaessig_gesamt} zulässig · "
         f"{evaluation.ausgeschlossen_gesamt} ausgeschlossen. "
@@ -35,6 +42,7 @@ def build_decision_note(evaluation: ShipmentEvaluation) -> str:
         f"{formatiere_entfernung(evaluation.entfernung_km)}. "
         f"Distanzfaktor: {formatiere_faktor(bestes_ergebnis.get('distanzfaktor', 1.0))} "
         f"({bestes_ergebnis.get('distanzhinweis', 'nicht bewertet')})."
+        f"{deadline_sentence}"
     )
 
 
@@ -70,6 +78,7 @@ def render_result_panel(evaluation: ShipmentEvaluation) -> bool:
                     {bestes_ergebnis['formatklasse']} · {referenz['abrechnungsgewicht']:.2f} kg Abrechnung / Paket<br>
                     Versand ab {sender.plz} {sender.ort} · {formatiere_entfernung(evaluation.entfernung_km)}<br>
                     Distanzfaktor {formatiere_faktor(bestes_ergebnis.get('distanzfaktor', 1.0))} · {bestes_ergebnis.get('distanzhinweis', 'nicht bewertet')}<br>
+                    Zustellprofil: {bestes_ergebnis.get('deadline_service', 'nicht geprüft')} · {bestes_ergebnis.get('deadline_reason', 'keine Zustellfrist angegeben')}<br>
                     {bestes_ergebnis['demo_hinweis']}
                 </div>
                 <div class="trust-list">
@@ -111,6 +120,25 @@ def render_result_panel(evaluation: ShipmentEvaluation) -> bool:
     else:
         st.error("Kein Anbieter kann diese Sendung im aktuellen Simulationsmodell abbilden.")
     st.markdown('</div>', unsafe_allow_html=True)
+
+    if evaluation.deadline_result and evaluation.deadline_result.get("status") != "nicht_bewertet":
+        deadline = evaluation.deadline_result
+        services = "<br>".join(deadline.get("top_services") or [deadline.get("hinweis", "Keine fristgerechte Option im Demo-Profil.")])
+        box_class = "ok-box" if deadline.get("status") == "erfuellbar" else "warning-box"
+        st.markdown('<div class="panel">', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">Zustellfrist</div>', unsafe_allow_html=True)
+        st.markdown(
+            f"""
+            <div class="message-box {box_class}">
+                <strong>{deadline['ziel']}</strong><br>
+                Anforderung: {deadline['anforderung']} · Verfügbare Tage: {deadline['tage_verfuegbar']}<br>
+                {services}
+                <div class="hint-line">{deadline['hinweis']}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.markdown('</div>', unsafe_allow_html=True)
 
     if bestes_ergebnis:
         teuerster_name = evaluation.teuerster_anbieter["anbieter"] if evaluation.teuerster_anbieter else "—"

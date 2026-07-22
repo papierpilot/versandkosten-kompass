@@ -186,3 +186,68 @@ class ShippingCoreTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+from datetime import date
+
+from modules.delivery_deadline import evaluate_delivery_deadline
+
+
+class DeliveryDeadlineTest(unittest.TestCase):
+    def test_deadline_without_target_is_not_evaluated(self):
+        shipment = ShipmentInput(
+            paket_menge=1,
+            gewicht_kg=1.4,
+            laenge_cm=30,
+            breite_cm=22,
+            hoehe_cm=12,
+            empfaenger="Musterkunde GmbH",
+            land="Deutschland",
+            plz="44135",
+            ort="Dortmund",
+        )
+        results = simuliere_anbieterpreise(1, 1.4, 30, 22, 12, 80)
+        deadline = evaluate_delivery_deadline(shipment, results, today=date(2026, 7, 22))
+        self.assertEqual(deadline["status"], "nicht_bewertet")
+
+    def test_deadline_next_day_prefers_express_capable_provider(self):
+        shipment = ShipmentInput(
+            paket_menge=1,
+            gewicht_kg=1.4,
+            laenge_cm=30,
+            breite_cm=22,
+            hoehe_cm=12,
+            empfaenger="Musterkunde GmbH",
+            land="Deutschland",
+            plz="44135",
+            ort="Dortmund",
+            gewuenschtes_zustelldatum="2026-07-23",
+            gewuenschte_zustellzeit="12:00",
+        )
+        results = simuliere_anbieterpreise(1, 1.4, 30, 22, 12, 80)
+        deadline = evaluate_delivery_deadline(shipment, results, today=date(2026, 7, 22))
+        provider_map = {item["anbieter"]: item for item in deadline["ergebnisse"]}
+        self.assertEqual(deadline["status"], "erfuellbar")
+        self.assertTrue(provider_map["UPS"]["deadline_ok"])
+        self.assertTrue(provider_map["Zipmend"]["deadline_ok"])
+        self.assertTrue(provider_map["Jumingo"]["deadline_ok"])
+        self.assertFalse(provider_map["DHL"]["deadline_ok"])
+
+    def test_workflow_uses_deadline_capable_recommendation(self):
+        evaluation = evaluate_shipment(
+            ShipmentInput(
+                paket_menge=1,
+                gewicht_kg=1.4,
+                laenge_cm=30,
+                breite_cm=22,
+                hoehe_cm=12,
+                empfaenger="Musterkunde GmbH",
+                land="Deutschland",
+                plz="44135",
+                ort="Dortmund",
+                gewuenschtes_zustelldatum="2026-07-23",
+                gewuenschte_zustellzeit="12:00",
+            )
+        )
+        self.assertIn(evaluation.bestes_ergebnis["anbieter"], {"UPS", "Zipmend", "Jumingo"})
+        self.assertTrue(evaluation.bestes_ergebnis["deadline_ok"])
+        self.assertEqual(evaluation.deadline_result["status"], "erfuellbar")

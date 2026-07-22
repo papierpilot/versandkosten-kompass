@@ -1,7 +1,7 @@
 """
 Input and validation panels for Versandkosten-Kompass.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_007"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_22_BUILD_008"
 PURPOSE = "Collect shipment input and render prepared validation data without pricing logic"
 """
 
@@ -151,6 +151,29 @@ def render_input_panel(
 
     st.markdown('</div>', unsafe_allow_html=True)
 
+    st.markdown('<div class="panel">', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Zustellfrist</div>', unsafe_allow_html=True)
+    deadline_enabled = st.checkbox("Zustelltermin prüfen", key="deadline_enabled")
+    gewuenschtes_zustelldatum = ""
+    gewuenschte_zustellzeit = ""
+    if deadline_enabled:
+        zf1, zf2 = st.columns([0.68, 0.32], gap="small")
+        with zf1:
+            deadline_date = st.date_input("Muss beim Kunden sein am", key="gewuenschtes_zustelldatum")
+        with zf2:
+            gewuenschte_zustellzeit = st.selectbox("spätestens", ["08:00", "10:00", "12:00", "18:00"], key="gewuenschte_zustellzeit")
+        gewuenschtes_zustelldatum = deadline_date.isoformat()
+        st.markdown(
+            '<div class="hint-line">Demo-Prüfung gegen gepflegte Standard-/Express-Serviceprofile. Keine echte Provider-Zusage.</div>',
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+            '<div class="hint-line">Ohne Zustelltermin bleibt die Empfehlung preis- und regelbasiert.</div>',
+            unsafe_allow_html=True,
+        )
+    st.markdown('</div>', unsafe_allow_html=True)
+
     return ShipmentInput(
         paket_menge=int(paket_menge),
         gewicht_kg=gewicht_kg,
@@ -163,6 +186,8 @@ def render_input_panel(
         ort=ort,
         packages=packages,
         sender=sender,
+        gewuenschtes_zustelldatum=gewuenschtes_zustelldatum,
+        gewuenschte_zustellzeit=gewuenschte_zustellzeit,
     )
 
 

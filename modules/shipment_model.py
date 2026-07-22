@@ -1,7 +1,7 @@
 """
 Shipment data contracts for Versandkosten-Kompass.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_007"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_22_BUILD_008"
 PURPOSE = "Typed input and evaluation objects for single- and multi-package shipments"
 """
 
@@ -37,6 +37,8 @@ class ShipmentInput:
     ort: str
     packages: tuple[PackageItem, ...] = ()
     sender: SenderProfile | None = None
+    gewuenschtes_zustelldatum: str = ""
+    gewuenschte_zustellzeit: str = ""
 
     def sender_profile(self) -> SenderProfile:
         """Return selected sender profile, or the default profile for legacy calls."""
@@ -86,3 +88,4 @@ class ShipmentEvaluation:
     ersparnis_betrag: float
     ersparnis_prozent: float
     teuerster_anbieter: dict[str, Any] | None
+    deadline_result: dict[str, Any] | None = None

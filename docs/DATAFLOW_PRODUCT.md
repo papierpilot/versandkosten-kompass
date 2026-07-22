@@ -1,6 +1,6 @@
 # Versandkosten-Kompass Datenfluss
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_007"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_22_BUILD_008"
 
 ## Ziel
 
@@ -68,3 +68,13 @@ Der Workflow bewertet immer die effektive Paketliste. Anbieter-Ausschlüsse werd
 `ShipmentInput` enthält jetzt ein optionales `SenderProfile`. Die UI bietet ein Auswahlmenü für konfigurierte Absender.
 
 Der Workflow nutzt den gewählten Absender für die Demo-Entfernung. Damit wird der Versandursprung fachlich sichtbar und später API-fähig.
+
+## Build VERSANDKOMPASS_2026_07_22_BUILD_008: Zustellfrist
+
+`ShipmentInput` enthält jetzt optional `gewuenschtes_zustelldatum` und `gewuenschte_zustellzeit`.
+
+Der Workflow ruft nach der Preisermittlung `modules.delivery_deadline.evaluate_delivery_deadline()` auf. Diese Funktion annotiert alle Anbieterergebnisse mit `deadline_ok`, `deadline_service`, `deadline_status` und `deadline_reason`.
+
+Wenn eine Zustellfrist angegeben ist, werden fristgerechte Anbieter vor Preis sortiert. Die Empfehlung bleibt sichtbar begründet: Preis, Anbietergrenzen und Service-Level werden gemeinsam ausgewiesen.
+
+Grenze dieses Builds: Die Zustellfrist ist eine Demo-Serviceprofil-Prüfung. Echte Laufzeitversprechen entstehen erst durch angebundene Provider-SLAs oder Kurierpreislisten.

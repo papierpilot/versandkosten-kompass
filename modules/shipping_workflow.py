@@ -1,10 +1,11 @@
 """
 Central shipping evaluation workflow.
 
-BUILD_MARKER = "VERSANDKOMPASS_2026_07_21_BUILD_007"
+BUILD_MARKER = "VERSANDKOMPASS_2026_07_22_BUILD_008"
 PURPOSE = "Orchestrate input normalization, validation, pricing, and recommendation metrics"
 """
 
+from modules.delivery_deadline import evaluate_delivery_deadline
 from modules.location_demo import berechne_demo_entfernung_km, normalisiere_plz
 from modules.pricing_simulation import (
     berechne_ersparnis,
@@ -36,7 +37,12 @@ def evaluate_shipment(shipment: ShipmentInput) -> ShipmentEvaluation:
     if not ergebnisse:
         raise ValueError("Keine Anbieterergebnisse erzeugt. Provider-Modell prüfen.")
 
-    bestes_ergebnis = next((ergebnis for ergebnis in ergebnisse if ergebnis["moeglich"]), None)
+    deadline_result = evaluate_delivery_deadline(shipment, ergebnisse)
+    ergebnisse = deadline_result["ergebnisse"]
+    bestes_ergebnis = next(
+        (ergebnis for ergebnis in ergebnisse if ergebnis["moeglich"] and ergebnis.get("deadline_ok", True)),
+        None,
+    ) or next((ergebnis for ergebnis in ergebnisse if ergebnis["moeglich"]), None)
     referenz = ergebnisse[0]
 
     warnungen = []
@@ -55,6 +61,8 @@ def evaluate_shipment(shipment: ShipmentInput) -> ShipmentEvaluation:
         warnungen.append(
             "Zieladresse noch unvollständig: Für echte API-Preise sind mindestens Land, PLZ und Ort nötig."
         )
+    if deadline_result["status"] in {"kritisch", "nicht_erfuellbar"}:
+        warnungen.append(f"Zustellfrist: {deadline_result['hinweis']}")
 
     zulaessig_gesamt = sum(1 for ergebnis in ergebnisse if ergebnis["moeglich"])
     ausgeschlossen_gesamt = len(ergebnisse) - zulaessig_gesamt
@@ -81,4 +89,5 @@ def evaluate_shipment(shipment: ShipmentInput) -> ShipmentEvaluation:
         ersparnis_betrag=ersparnis_betrag,
         ersparnis_prozent=ersparnis_prozent,
         teuerster_anbieter=teuerster_anbieter,
+        deadline_result=deadline_result,
     )
